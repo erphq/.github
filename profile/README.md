@@ -6,37 +6,30 @@
 
 </div>
 
-Infrastructure. Agents. Tools. Skills. Every repo in this org is one of those four. Composable. MCP-native. Local-first where it matters.
+We're building a stack where the storage layer, the agents that operate on it, the tools that drive them, and the skills that compose them are designed together. Some pieces are open. Most are not.
 
-## ✦ Where to start
+## ✦ What's open here
 
-| You want to | Repo |
+| Repo | What it does |
 |---|---|
-| **Embed a graph + vector DB** | [`FFS`](https://github.com/erphq/FFS) · Cypher · HNSW · MVCC · Rust · one file |
-| **Ask English of your ClickHouse warehouse** | [`clickr`](https://github.com/erphq/clickr) · text-to-SQL CLI |
-| **Drop AI into a terminal** | [`neo`](https://github.com/erphq/neo) · agentic terminal · TypeScript · local-first |
-| **Build an ERP from English** | [`erpai-builder-skills`](https://github.com/erphq/erpai-builder-skills) · schema · tables · workflows |
-| **Mine your event logs with GNNs** | [`GNN`](https://github.com/erphq/GNN) · GAT · LSTM · Q-learning · PM4Py |
-| **Deploy via Claude Code** | [`build-host`](https://github.com/erphq/build-host) · `*.build.host` · no CI/CD |
-| **Browse the open skill stack** | [`skills`](https://github.com/erphq/skills) · SDStack · 50+ skills |
-
-## ✦ The four layers
-
-```text
-infrastructure   FFS · build-host · neo
-agents           GNN · agents · agentsmith · processmind · codegraph
-tools            clickr · erpai-cli · neo · gitlab-mr-mcp
-skills           skills · enterprise-skills · erpai-builder-skills · lab-opskills · appskills
-```
+| [`GNN`](https://github.com/erphq/GNN) | Process mining with Graph Attention Networks. Next-event prediction, bottleneck detection, conformance, Q-learning. PyTorch + PM4Py + Rust hot paths. |
+| [`clickr`](https://github.com/erphq/clickr) | Natural-language CLI for ClickHouse®. Text-to-SQL with local or cloud LLMs. |
+| [`skills`](https://github.com/erphq/skills) | SDStack. The open enterprise skill stack. 50+ Claude Code skills covering accounting, HR, procurement, support, ops. |
+| [`neo-releases`](https://github.com/erphq/neo-releases) | Signed binaries for Neo, our local-first agentic coding assistant. macOS / Linux / Windows. |
 
 ## ✦ What we believe
 
-- **Local-first.** Models in browsers, on laptops, in CLIs. Not cloud round-trips for things that should be free.
+- **Local-first.** Models run on laptops, in browsers, in CLIs. Cloud round-trips only when they're genuinely necessary.
 - **Typed contracts.** Schema enforced at the storage boundary, not in an application layer above. Errors caught at compile, not in production.
 - **Composable skills.** Every business process is a skill. Skills compose. Skills ship in less than an hour.
-- **One engine.** Graph, vector, columnar in one place. Not three systems duct-taped with FK columns.
-- **Agents that actually do work.** Not chat-only. Tool-loop, typed permissions, real outcomes.
+- **Agents that do work.** Tool-loop, typed permissions, real outcomes. Not chat-only demos.
+
+## ✦ Get in touch
+
+- [erp.ai](https://erp.ai)
+- [erpai.studio](https://erpai.studio)
+- security@erp.ai for vulnerabilities (see [SECURITY.md](https://github.com/erphq/.github/blob/main/SECURITY.md))
 
 <div align="center">
-<sub>San Francisco · audited from goals.md down · ADR-driven</sub>
+<sub>San Francisco</sub>
 </div>
