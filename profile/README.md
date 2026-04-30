@@ -27,7 +27,6 @@ We're building a stack where the storage layer, the agents that operate on it, t
 ## ✦ Get in touch
 
 - [erp.ai](https://erp.ai)
-- [erpai.studio](https://erpai.studio)
 - security@erp.ai for vulnerabilities (see [SECURITY.md](https://github.com/erphq/.github/blob/main/SECURITY.md))
 
 <div align="center">
