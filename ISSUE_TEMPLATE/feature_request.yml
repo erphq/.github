@@ -1,0 +1,40 @@
+name: Feature request
+description: A capability that doesn't exist yet, with a real use case behind it.
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What are you trying to do that's currently hard or impossible? Be concrete. "Better X" is not a problem statement.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed approach
+      description: How you'd like it to work. Sketch the API or the behaviour change. Skip if you genuinely don't know.
+    validations:
+      required: false
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you considered
+      description: What other approaches did you weigh? Why aren't they sufficient?
+    validations:
+      required: false
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Scope
+      description: How big do you think this is?
+      options:
+        - "S (one afternoon)"
+        - "M (a few days)"
+        - "L (a week+)"
+        - "I have no idea"
+    validations:
+      required: true

@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/erphq/.github/blob/main/SECURITY.md
+    about: Don't open a public issue. Email security@erp.ai instead.
+  - name: Question or discussion
+    url: https://github.com/erphq/.github/discussions
+    about: Use Discussions for questions, design conversation, or workflow help.

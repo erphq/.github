@@ -1,0 +1,49 @@
+name: Bug report
+description: Something is broken or behaves unexpectedly.
+labels: ["bug"]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: Version / commit
+      description: Which release tag or commit SHA reproduces this?
+      placeholder: e.g. v0.2.0 or 1475fd2
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: One paragraph. The actual observed behaviour.
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-expected
+    attributes:
+      label: What you expected
+      description: The behaviour you were after.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal reproduction
+      description: Smallest code, command, or input that triggers it.
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: env
+    attributes:
+      label: Environment
+      description: OS, language toolchain version, anything non-default.
+      placeholder: |
+        - OS: macOS 14.5
+        - Rust: 1.85
+        - ClickHouse: 24.3
+    validations:
+      required: false
