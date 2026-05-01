@@ -2,9 +2,9 @@
 
 # `erp•ai`
 
-### AI-native enterprise software, top to bottom
+### the substrate for agent-driven SaaS
 
-The storage engine, the agents that operate on it, the runtime that drives them, the skills that compose them, and the interfaces that surface them — all designed together, in one stack, in Rust.
+every business-software category — finance, HR, support, sales, ops, ITSM, billing, project management, analytics — rebuilt as agent-first software on one stack. one storage engine, one memory tier, one runtime, one skill model, one set of interfaces. Rust top to bottom.
 
 </div>
 
@@ -12,11 +12,13 @@ The storage engine, the agents that operate on it, the runtime that drives them,
 
 ## ✦ The thesis
 
-Enterprise software today is a graveyard of stitched-together SaaS. An ERP. A CRM. A ticketing system. A BI tool. A file store. Three separate identity providers. A Postgres for transactions, a vector DB for retrieval, a graph DB for relationships, a warehouse for analytics, an event bus to keep them in rough sync. Twelve dashboards, one source of truth — usually wrong.
+Business software today is a graveyard of stitched-together SaaS. An ERP. A CRM. A helpdesk. A ticketing system. A BI tool. A billing platform. Three separate identity providers. A Postgres for transactions, a vector DB for retrieval, a graph DB for relationships, a warehouse for analytics, an event bus to keep them in rough sync. Twelve dashboards, one source of truth — usually wrong.
 
-That stack was built for humans clicking forms. AI-native enterprise software is built for **agents writing thousands of events per second** with full lineage, full typing, and full audit. That's a different shape. Vector-DBs-bolted-on-Postgres do not become AI-native by adding `embedding VECTOR(384)`. Tool-loops over OpenAI Assistants do not become AI-native by adding `if (tool === "send_email")`.
+That stack was built for humans clicking forms. **Agent-driven software is built for agents writing thousands of events per second** with full lineage, full typing, and full audit. That's a different shape. Vector-DBs-bolted-on-Postgres do not become agent-native by adding `embedding VECTOR(384)`. Tool-loops over OpenAI Assistants do not become agent-native by adding `if (tool === "send_email")`.
 
-You have to redesign the storage so the writes the agents emit don't drown it. You have to redesign the auth so per-key scopes and audit trails are a default, not a bolt-on. You have to redesign the memory so it's typed, queryable, vector-searchable, **and** graph-walkable in one shot. You have to redesign the runtime so every step is auditable by construction. You have to redesign the embeddings, the replication, the CDC, the replay, the skills.
+You have to redesign the storage so the writes the agents emit don't drown it. You have to redesign the auth so per-key scopes and audit trails are a default, not a bolt-on. You have to redesign the memory so it's typed, queryable, vector-searchable, **and** graph-walkable in one shot. You have to redesign the runtime so every step is auditable by construction. You have to redesign the embeddings, the replication, the change-capture, the replay, the skills.
+
+The bet is that **once that substrate exists, every vertical of SaaS becomes a thin layer of skills + UI on top of it.** ERP is the highest-leverage first vertical — it sits on the most data, has the most expensive incumbents, and rewards an agent-first rebuild more than anywhere else. But the same stack runs CRM, ITSM, support, billing, project management, recruiting, FP&A. The substrate is horizontal. The brand is the first vertical we're attacking with it.
 
 That's what we're doing. Here.
 
@@ -70,9 +72,9 @@ Sanskrit *vāhinī* — "the flowing channel." Tails the FFS WAL on a primary, s
 
 Sanskrit *bīja* — "the seed." candle-backed sentence-transformer behind an OpenAI-shape `/v1/embeddings` endpoint. Removes OpenAI as a hard dep on the smriti write path. Persistent KV cache so the same input doesn't re-run the model. The model lives next to the data.
 
-### `flow` — ERP change-data-capture
+### `flow` — system-of-record change-data-capture
 
-Streams Postgres / SAP / Oracle / NetSuite deltas into smriti as typed agent-memory events with `source_event_ids` lineage. The pipe that turns "agent memory" into **ERP-AI memory** — without it, the agent reasons in a vacuum.
+Streams deltas from any operational source — Postgres, MySQL, SaaS APIs (Salesforce, NetSuite, Stripe, Zendesk, Linear, …), SAP / Oracle / Dynamics for ERP, message queues, file watchers — into smriti as typed agent-memory events with `source_event_ids` lineage. The pipe that turns "agent memory" into **a live mirror of the business** — without it, the agent reasons in a vacuum.
 
 ---
 
@@ -106,7 +108,7 @@ For workflows that span more than one agent run (e.g., "monthly close" — 30+ a
 
 ### `gnn` — process mining with graph attention networks
 
-Next-event prediction, bottleneck detection, conformance checking, Q-learning over event-log graphs. PyTorch + PM4Py + Rust hot paths. Crawls the event graph smriti stores and finds the actual process — not the one in the SOP doc.
+Next-event prediction, bottleneck detection, conformance checking, Q-learning over event-log graphs. PyTorch + PM4Py + Rust hot paths. Crawls the event graph smriti stores — works equally on procurement workflows, support-ticket flows, sales-order processes, recruiting funnels, anything event-shaped — and finds the actual process, not the one in the SOP doc.
 
 ### Planned: `drishti` — document understanding
 
@@ -140,6 +142,25 @@ The conversational and dashboard surface. One identity, one event stream, one se
 
 ---
 
+## ✦ The verticals
+
+The substrate is vertical-agnostic. The same `smriti` + `karta` + `bija` + `flow` stack delivers radically different products depending on which connectors run, which skills load, and which surfaces ship. Some examples of what fits on it:
+
+| Vertical | Source-of-record `flow` connects to | Skills `karta` runs |
+|---|---|---|
+| **Finance / ERP** | Postgres-backed ERPs (Odoo, ERPNext), SAP, Oracle EBS / Fusion, NetSuite, Microsoft Dynamics, QuickBooks | journal entry review, AP automation, AR collections, FP&A narrative, month-end close |
+| **CRM / Sales** | Salesforce, HubSpot, Pipedrive | lead enrichment, deal-risk triage, account research, quote drafting |
+| **Support / Helpdesk** | Zendesk, Intercom, Freshdesk, ServiceNow | ticket triage, response drafting, knowledge-base sync, SLA-breach prediction |
+| **ITSM / DevOps** | Linear, Jira, PagerDuty, GitHub | incident triage, post-mortem drafting, runbook execution, change-risk scoring |
+| **HR / Recruiting** | Workday, BambooHR, Greenhouse, Lever | candidate screening, scheduling, offer-letter drafting, onboarding |
+| **Billing / Revenue** | Stripe, Chargebee, Recurly | dunning, churn-risk scoring, refund triage, revenue recognition |
+| **Procurement** | Coupa, Ariba, ERP modules | vendor onboarding, PO matching, contract review, spend analysis |
+| **Marketing / Growth** | Marketo, Customer.io, Iterable, Mixpanel | campaign analysis, audience-segment generation, copy drafting |
+
+Every row above is the same stack underneath. The product differences are: which connector `flow` runs (one row's worth), which skill bundle `karta` loads (one library), which interface ships (chat / dashboard / CLI / mobile). Months of integration work for traditional SaaS; days for ours.
+
+---
+
 ## ✦ What's open here
 
 The repos linked below are public. The rest of the stack named above is internal until each piece is ready to leave the building.
@@ -165,7 +186,7 @@ Symbols: ✅ shipped (one of our repos) · 🟡 partial / in flight · ⏳ plann
 | Embedded graph + vector + columnar engine | ✅ | `FFS` |
 | Managed memory service over the engine | ✅ | `smriti` |
 | Streaming replication / HA | ✅ | `vahini` |
-| ERP change-data-capture | 🟡 | `flow` (Postgres connector first) |
+| Change-data-capture from operational sources | 🟡 | `flow` (Postgres connector first; ERP / SaaS / queue connectors planned) |
 | Local embedding service | 🟡 | `bija` (model loader in flight) |
 | Schema persistence across restarts | ⏳ | blocked on FFS catalog persistence |
 | Property projection in queries | ⏳ | blocked on FFS columnar read API |
