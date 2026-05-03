@@ -1,0 +1,80 @@
+name: Refresh status table
+
+# Rebuilds the org-wide CI status block in profile/README.md so the
+# org page (https://github.com/erphq) always shows yesterday's run
+# tally + current per-repo test counts. The intended audience is an
+# agent that opens the org page each morning to triage what to fix.
+#
+# Cadence: hourly during the day, plus a manual trigger. Hourly is
+# light: ~30 small gh-api reads + one repo edit at most.
+#
+# Auth: cross-repo reads of private org repos need a PAT scoped to
+# `repo`. Store it as the org/repo secret `ORG_REFRESH_PAT`. Without
+# it, the workflow still runs but private-repo run tallies show zero.
+
+on:
+  schedule:
+    # Every hour at :05 — staggered off :00 so it doesn't pile onto
+    # the busiest minute of cron-time across GH Actions.
+    - cron: '5 * * * *'
+  workflow_dispatch: {}
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/build-status-table.sh'
+      - '.github/workflows/refresh-status.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-status
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Build status table
+        env:
+          # Prefer the cross-repo PAT; fall back to the workflow's
+          # default token (which can only see this repo's runs).
+          GH_TOKEN: ${{ secrets.ORG_REFRESH_PAT || secrets.GITHUB_TOKEN }}
+          ORG: erphq
+        run: |
+          bash scripts/build-status-table.sh > /tmp/status-table.md
+          echo "--- preview ---"
+          head -20 /tmp/status-table.md
+
+      - name: Inject into profile/README.md
+        run: |
+          python3 <<'PY'
+          import re, pathlib
+          table = pathlib.Path('/tmp/status-table.md').read_text().rstrip()
+          path = pathlib.Path('profile/README.md')
+          src = path.read_text()
+          new = re.sub(
+              r'(<!-- BEGIN: ci-status -->\n).*?(\n<!-- END: ci-status -->)',
+              lambda m: m.group(1) + table + m.group(2),
+              src,
+              flags=re.S,
+          )
+          if new == src:
+              raise SystemExit('marker block not found or unchanged — aborting')
+          path.write_text(new)
+          PY
+
+      - name: Commit if changed
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          if git diff --quiet profile/README.md; then
+            echo "No changes — table already up-to-date."
+            exit 0
+          fi
+          git add profile/README.md
+          git commit -m "chore: refresh org CI status table"
+          git push
