@@ -249,15 +249,15 @@ Symbols: ✅ shipped (one of our repos) · 🟡 partial / in flight · ⏳ plann
 A live roll-up of the **public** org surface area so an agent (or human) opening this page each morning can see at a glance what's tested, what's running, and what's red. The window is "since 00:00 UTC today." Refreshed every hour by [`refresh-status.yml`](https://github.com/erphq/.github/blob/main/.github/workflows/refresh-status.yml). Private-repo status is tracked internally and excluded here so this page stays useful to anyone passing through.
 
 <!-- BEGIN: ci-status -->
-_Last refreshed: 2026-05-03 02:33 UTC. Window: runs created since 00:00 UTC today (`2026-05-03T00:00:00Z`)._
+_Last refreshed: 2026-05-03 02:34 UTC. Window: runs created since 00:00 UTC today (`2026-05-03T00:00:00Z`)._
 
 | Repo | Tests | Runs today | ✅ pass | ❌ fail | ⚠️ other |
 |---|---:|---:|---:|---:|---:|
+| [`GNN`](https://github.com/erphq/GNN) | 110 | 12 | 11 | 1 | 0 |
 | [`clickr`](https://github.com/erphq/clickr) | 46 | 2 | 2 | 0 | 0 |
 | [`cypher-rs`](https://github.com/erphq/cypher-rs) | 130 | 2 | 2 | 0 | 0 |
 | [`erpai-cli`](https://github.com/erphq/erpai-cli) | — | 0 | 0 | 0 | 0 |
 | [`erpai-cli-releases`](https://github.com/erphq/erpai-cli-releases) | — | 0 | 0 | 0 | 0 |
-| [`GNN`](https://github.com/erphq/GNN) | 110 | 12 | 11 | 1 | 0 |
 | [`mcprec`](https://github.com/erphq/mcprec) | 80 | 6 | 6 | 0 | 0 |
 | [`neo-releases`](https://github.com/erphq/neo-releases) | — | 0 | 0 | 0 | 0 |
 | [`pm-bench`](https://github.com/erphq/pm-bench) | 232 | 2 | 2 | 0 | 0 |
