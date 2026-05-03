@@ -49,9 +49,18 @@ jobs:
           echo "--- preview ---"
           head -20 /tmp/status-table.md
 
-      - name: Inject into profile/README.md
+      - name: Inject + commit + push (race-safe)
         run: |
-          python3 <<'PY'
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+          # Inject the freshly-built table into profile/README.md by
+          # replacing whatever sits between the BEGIN/END markers.
+          # Because the source is the marker block (not a 3-way merge),
+          # this is safe to repeat after a pull — the previous content
+          # is just overwritten verbatim.
+          inject() {
+            python3 <<'PY'
           import re, pathlib
           table = pathlib.Path('/tmp/status-table.md').read_text().rstrip()
           path = pathlib.Path('profile/README.md')
@@ -62,27 +71,30 @@ jobs:
               src,
               flags=re.S,
           )
-          if new == src:
-              raise SystemExit('marker block not found or unchanged — aborting')
+          if new == src and '<!-- BEGIN: ci-status -->' not in src:
+              raise SystemExit('marker block not found — aborting')
           path.write_text(new)
           PY
+          }
 
-      - name: Commit if changed
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          if git diff --quiet profile/README.md; then
-            echo "No changes — table already up-to-date."
-            exit 0
-          fi
-          git add profile/README.md
-          git commit -m "chore: refresh org CI status table"
-          # Race-safe push: another concurrent run (or a manual push) may
-          # have advanced main between checkout and now. Rebase onto the
-          # latest before pushing so we don't lose either side's work.
+          # Pull-then-inject-then-push, retrying the whole loop on race.
+          # We re-inject after every pull so the marker block always
+          # reflects the freshly-built table on top of the latest main —
+          # no rebase conflict is possible because the only edits to
+          # this region come from this workflow.
           for attempt in 1 2 3; do
-            git pull --rebase --autostash origin main && git push && exit 0
+            git fetch origin main
+            git reset --hard origin/main
+            inject
+            if git diff --quiet profile/README.md; then
+              echo "No changes — table already up-to-date."
+              exit 0
+            fi
+            git add profile/README.md
+            git commit -m "chore: refresh org CI status table"
+            if git push; then exit 0; fi
+            echo "Push lost a race on attempt $attempt; pulling and re-injecting…"
             sleep 5
           done
-          echo "::error::push failed after 3 rebase attempts"
+          echo "::error::push failed after 3 attempts"
           exit 1
