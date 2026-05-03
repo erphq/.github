@@ -77,4 +77,12 @@ jobs:
           fi
           git add profile/README.md
           git commit -m "chore: refresh org CI status table"
-          git push
+          # Race-safe push: another concurrent run (or a manual push) may
+          # have advanced main between checkout and now. Rebase onto the
+          # latest before pushing so we don't lose either side's work.
+          for attempt in 1 2 3; do
+            git pull --rebase --autostash origin main && git push && exit 0
+            sleep 5
+          done
+          echo "::error::push failed after 3 rebase attempts"
+          exit 1
