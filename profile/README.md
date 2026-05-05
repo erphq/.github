@@ -4,9 +4,11 @@
 
 ### the substrate for agent-driven SaaS
 
-every business-software category — finance, HR, support, sales, ops, ITSM, billing, project management, analytics — rebuilt as agent-first software on one stack. one storage engine, one memory tier, one runtime, one skill model, one set of interfaces. Rust top to bottom.
+every business-software category - finance, HR, support, sales, ops, ITSM, billing, project management, analytics - rebuilt as agent-first software on one stack. one storage engine, one memory tier, one runtime, one skill model, one set of interfaces. Rust top to bottom.
 
 </div>
+
+> 🗺 **Org members, start here:** [`erphq/MetaRepo`](https://github.com/erphq/MetaRepo) is the architecture map for every repo - layer-by-layer diagrams, the full edge list, and a current-status snapshot of all 40 repositories. New to the org? Skim that, then dive in.
 
 ---
 
