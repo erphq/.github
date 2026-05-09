@@ -134,9 +134,9 @@ Sanskrit *lekhak* — "writer." Auto-narrative for board decks, exec summaries, 
 
 Text-to-SQL with local or cloud LLMs. The terminal-native edge of the analytics stack.
 
-### `neo` — local-first agentic coding assistant
+### `neo` — agent console for finance, ops, HR, sales, support
 
-Signed binaries for macOS / Linux / Windows in [`neo-releases`](https://github.com/erphq/neo-releases). Tool-loop, typed permissions, runs locally.
+Local-first desktop app for talking to and running AI agents. Tool-loop, typed permissions, file-based memory, model-agnostic (Claude / Gemini / GLM / Ollama). Signed binaries for macOS / Linux / Windows in [`neo-releases`](https://github.com/erphq/neo-releases) (publish in flight).
 
 ### Planned: web app, mobile, voice
 
@@ -172,7 +172,7 @@ The repos linked below are public. The rest of the stack named above is internal
 | [`GNN`](https://github.com/erphq/GNN) | Process mining with Graph Attention Networks. Next-event prediction, bottleneck detection, conformance, Q-learning. |
 | [`clickr`](https://github.com/erphq/clickr) | Natural-language CLI for ClickHouse®. Text-to-SQL with local or cloud LLMs. |
 | [`skills`](https://github.com/erphq/skills) | The open enterprise skill stack. 50+ Claude Code skills covering accounting, HR, procurement, support, ops. |
-| [`neo-releases`](https://github.com/erphq/neo-releases) | Signed binaries for Neo, our local-first agentic coding assistant. macOS / Linux / Windows. |
+| [`neo-releases`](https://github.com/erphq/neo-releases) | Signed binaries for Neo, our agent console for finance / ops / HR / sales / support. macOS / Linux / Windows. |
 
 ---
 
@@ -209,7 +209,7 @@ Symbols: ✅ shipped (one of our repos) · 🟡 partial / in flight · ⏳ plann
 | Voice / transcription | ⏳ | planned |
 | **Interface tier** | | |
 | Natural-language CLI (analytics) | ✅ | `clickr` |
-| Local-first coding assistant | ✅ | `neo-releases` |
+| Local-first agent console | ✅ | `neo-releases` |
 | Conversational UI (chat-with-agent) | ⏳ | planned |
 | Web dashboard / forms surface | ⏳ | planned |
 | Mobile / offline | ⏳ | planned |
