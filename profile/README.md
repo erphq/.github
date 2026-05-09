@@ -251,7 +251,7 @@ Symbols: ✅ shipped (one of our repos) · 🟡 partial / in flight · ⏳ plann
 A live roll-up of the **public** org surface area so an agent (or human) opening this page each morning can see at a glance what's tested, what's running, and what's red. The window is "since 00:00 UTC today." Refreshed every hour by [`refresh-status.yml`](https://github.com/erphq/.github/blob/main/.github/workflows/refresh-status.yml). Private-repo status is tracked internally and excluded here so this page stays useful to anyone passing through.
 
 <!-- BEGIN: ci-status -->
-_Last refreshed: 2026-05-09 16:27 UTC. Window: runs created since 00:00 UTC today (`2026-05-09T00:00:00Z`)._
+_Last refreshed: 2026-05-09 17:27 UTC. Window: runs created since 00:00 UTC today (`2026-05-09T00:00:00Z`)._
 
 | Repo | Tests | Runs today | ✅ pass | ❌ fail | ⚠️ other |
 |---|---:|---:|---:|---:|---:|
