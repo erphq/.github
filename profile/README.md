@@ -2,27 +2,53 @@
 
 # `erp•ai`
 
-### the substrate for agent-driven SaaS
-
-every business-software category - finance, HR, support, sales, ops, ITSM, billing, project management, analytics - rebuilt as agent-first software on one stack. one storage engine, one memory tier, one runtime, one skill model, one set of interfaces. Rust top to bottom.
+### the engine behind erp.ai, build.host, and krawler.com
 
 </div>
 
-> 🗺 **Org members, start here:** [`erphq/MetaRepo`](https://github.com/erphq/MetaRepo) is the architecture map for every repo - layer-by-layer diagrams, the full edge list, and a current-status snapshot of all 40 repositories. New to the org? Skim that, then dive in.
+A 40-repo engineering org behind three live products: [erp.ai](https://erp.ai), [build.host](https://build.host), [krawler.com](https://krawler.com). ~1,850 tests across Rust, Python, and TypeScript. The product platforms are private; the engine that runs underneath them is open here.
+
+> 🗺 **Org members, start here:** [`erphq/MetaRepo`](https://github.com/erphq/MetaRepo) is the architecture map for every repo — layer-by-layer diagrams, the full edge list, and a current-status snapshot of all 40 repositories. New to the org? Skim that, then dive in.
+
+---
+
+## ✦ What's live
+
+**[erp.ai](https://erp.ai)** is the flagship product. AI for the work a business actually runs on — finance, HR, sales, support, operations — sized from small business to large enterprise. The platform that runs it lives in a private monorepo and is not open-sourced.
+
+Two sister brands are also live, in soft-launch:
+
+- **[build.host](https://build.host)** — agent-run deploy infrastructure. The host an agent talks to directly. One prompt in, one URL out. Works with Claude Code, Codex, Neo, or anything that reads a `SKILL.md`.
+- **[krawler.com](https://krawler.com)** — the professional network for AI agents. Agents post, comment, follow, and hire. Humans watch.
+
+What ships open under `erphq` is the engine the products run on, plus developer-facing SDKs, the skill catalog, and the agent console.
+
+---
+
+## ✦ What runs underneath
+
+The customer-facing platforms are a set of services not in this org:
+
+- An API gateway in front of all product traffic, with centralized auth, routing, and rate limiting.
+- An identity + permissions service with per-tenant scopes and audit.
+- An agent runtime that operates the catalog of business apps.
+- A UI layer that renders the post-login app surface.
+- A tenant-config service that handles custom domains and on-demand TLS.
+- An auth SDK that drops into Next.js apps for hosted-app sign-in.
+- An app-builder API that turns English specs into running apps.
+- Independent services for audit-log, usage metering, attachments, and snapshots.
+
+These services touch customer data and stay closed. The engine they delegate to is open under this org, and is what the rest of this README covers.
 
 ---
 
 ## ✦ The thesis
 
-Business software today is a graveyard of stitched-together SaaS. An ERP. A CRM. A helpdesk. A ticketing system. A BI tool. A billing platform. Three separate identity providers. A Postgres for transactions, a vector DB for retrieval, a graph DB for relationships, a warehouse for analytics, an event bus to keep them in rough sync. Twelve dashboards, one source of truth — usually wrong.
+Business software today is a stack of separately-bought SaaS: an ERP, a CRM, a helpdesk, a BI tool, three identity providers, a Postgres for transactions, a vector DB for retrieval, a warehouse for analytics, an event bus to keep them in sync. It was built for humans clicking forms.
 
-That stack was built for humans clicking forms. **Agent-driven software is built for agents writing thousands of events per second** with full lineage, full typing, and full audit. That's a different shape. Vector-DBs-bolted-on-Postgres do not become agent-native by adding `embedding VECTOR(384)`. Tool-loops over OpenAI Assistants do not become agent-native by adding `if (tool === "send_email")`.
+Agent-driven software is a different workload. An agent fleet writes thousands of typed events per second, every one carrying lineage from the row that produced it to the decision that consumed it. To run that workload, the storage, the memory, the runtime, the replication, the change-capture, and the skill layer all have to be designed for agent traffic rather than bolted on top of stores built for human-paced SQL.
 
-You have to redesign the storage so the writes the agents emit don't drown it. You have to redesign the auth so per-key scopes and audit trails are a default, not a bolt-on. You have to redesign the memory so it's typed, queryable, vector-searchable, **and** graph-walkable in one shot. You have to redesign the runtime so every step is auditable by construction. You have to redesign the embeddings, the replication, the change-capture, the replay, the skills.
-
-The bet is that **once that substrate exists, every vertical of SaaS becomes a thin layer of skills + UI on top of it.** ERP is the highest-leverage first vertical — it sits on the most data, has the most expensive incumbents, and rewards an agent-first rebuild more than anywhere else. But the same stack runs CRM, ITSM, support, billing, project management, recruiting, FP&A. The substrate is horizontal. The brand is the first vertical we're attacking with it.
-
-That's what we're doing. Here.
+Once an engine like that exists, every category of business software can be rebuilt as a thin layer of skills and UI on top of it. ERP is the first category we're attacking. The same engine runs CRM, support, ITSM, billing, project management, FP&A, recruiting.
 
 ---
 
@@ -30,149 +56,109 @@ That's what we're doing. Here.
 
 ```text
 ┌────────────────────────────────────────────────────────────────────────┐
-│  interface tier            chat · CLI · IDE assistant · mobile         │
-│                            clickr · neo · (planned: web app, voice)    │
+│  interface tier            chat · CLI · IDE assistant · desktop        │
+│                            neo · clickr · erpai-cli · shruti           │
 ├────────────────────────────────────────────────────────────────────────┤
-│  agent tier                runtime · skills · replay · workflows       │
-│                            karta · skills · crucible · (planned: yantra) │
+│  agent tier                runtime · replay · skill catalog            │
+│                            karta · crucible · agents · skills          │
 ├────────────────────────────────────────────────────────────────────────┤
-│  intelligence tier         process mining · forecasting · doc-AI       │
-│                            gnn · (planned: drishti, gauge, lekhak)     │
+│  intelligence tier         process mining · code intel · MDM           │
+│                            processmind · GNN · codegraph · voronoi     │
 ├────────────────────────────────────────────────────────────────────────┤
-│  memory tier               agent memory · embeddings · replay store    │
+│  identity tier             auth · risk scoring · sandboxed plugins     │
+│                            agentsmith                                  │
+├────────────────────────────────────────────────────────────────────────┤
+│  memory tier               agent memory · embeddings                   │
 │                            smriti · bija                               │
 ├────────────────────────────────────────────────────────────────────────┤
 │  ingest tier               ERP CDC · WAL replication                   │
 │                            flow · vahini                               │
 ├────────────────────────────────────────────────────────────────────────┤
 │  storage tier              graph + vector + columnar engine            │
-│                            FFS                                          │
+│                            FFS · cypher-rs                             │
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
-Every tier in Rust. Every tier with a typed contract. Every tier that talks to another over an HTTP-shaped or process-shaped boundary so any single piece can be replaced.
+Each tier is independently replaceable across an HTTP or process boundary.
 
 ---
 
-## ✦ Storage tier
+## ✦ What's open under this org
 
-> The substrate. Where bytes live, where durability is enforced, where queries hit physical I/O.
+40 repos total — 13 public, 7 internal (org-only), 18 private active, 2 archived. ~1,850 tests across the active set. The public surface, by layer:
 
-### `FFS` — the embedded engine
+| Layer | Repo | Lang | What it does |
+|---|---|---|---|
+| Storage | [`cypher-rs`](https://github.com/erphq/cypher-rs) | Rust | openCypher front-end: lex, parse, semantic analysis, logical plan, optimizer, cost model. Storage-agnostic. v0.10.0, 130 tests. |
+| Process mining | [`GNN`](https://github.com/erphq/GNN) | Python | Graph-attention networks over event logs. Next-event prediction, bottleneck detection, conformance, Q-learning. v0.4.1, 110 tests. |
+| Process mining | [`pm-bench`](https://github.com/erphq/pm-bench) | Python | Open process-mining benchmark — datasets, splits, scoring, leaderboard. 232 tests. |
+| Process mining | [`pm-rag`](https://github.com/erphq/pm-rag) | Python | Process-aware retrieval over event traces. Graph diffusion conditioned on process state. v0.6.0, 77 tests. |
+| Skills | [`skills`](https://github.com/erphq/skills) | — | 50+ Claude Code skills covering accounting, HR, procurement, support, ops. Vendor-neutral, MCP-native. |
+| Skills | [`skillcheck`](https://github.com/erphq/skillcheck) | TS | Static analyzer for Claude Code skills. Lints manifests, verifies refs, catches trigger collisions. SARIF reporter. v0.6.0, 70 tests. |
+| Tooling | [`mcprec`](https://github.com/erphq/mcprec) | TS | Record and replay any MCP server. Stdio + HTTP/SSE transports. v0.5.0, 80 tests. |
+| Agent UX | [`clickr`](https://github.com/erphq/clickr) | Python | Natural-language CLI for ClickHouse. Text-to-SQL with local or cloud LLMs. v1.0.3, 46 tests. |
+| Agent UX | [`neo-releases`](https://github.com/erphq/neo-releases) | — | Signed binaries and auto-update manifests for Neo, the agent console. macOS / Linux / Windows. |
+| Agent UX | [`erpai-cli`](https://github.com/erphq/erpai-cli) · [`erpai-cli-releases`](https://github.com/erphq/erpai-cli-releases) | — | Natural-language CLI for ERP data. Source is a placeholder; signed binaries and Next.js download page ship from the `-releases` repo. |
+| Browser SDK | [`erpai-pages-runtime`](https://github.com/erphq/erpai-pages-runtime) | JS | Browser runtime for sandboxed ERPAI custom HTML pages. `window.erpai`: SQL/records, formatters, theme, charts. v2.2.0. |
+| Org meta | [`.github`](https://github.com/erphq/.github) | Shell | This file plus org community-health files and an hourly CI-status refresh workflow. |
 
-A typed graph + vector + columnar database in a single file. Pager + WAL + transaction manager + HNSW + RelTable + Cypher subset. One database file per tenant, one fsync per commit, atomic across graph + vector writes. Designed for write-heavy workloads — the only ones that matter when an agent fleet is your customer.
-
-### `smriti` — managed agent memory
-
-The HTTP service in front of FFS. Multi-tenant. Per-tenant rate limits, per-key scopes (`read` / `write` / `admin`), per-request `x-smriti-trace-id` correlation, Prometheus metrics, append-only audit log of admin actions, edge traversal in Cypher (`MATCH (n)-[:SOURCE_FROM]->(m)`), persistent HNSW + RelTable across restarts. The boring server in front of the interesting database.
-
-### `vahini` — streaming WAL replication
-
-Sanskrit *vāhinī* — "the flowing channel." Tails the FFS WAL on a primary, ships records to N followers, fsyncs on the replica side, surfaces lag. No consensus, no quorum writes — single primary, async fan-out, failover via DNS / proxy flip. The deployment-side answer to "what happens when the smriti host dies."
-
-### `bija` — local embedding service
-
-Sanskrit *bīja* — "the seed." candle-backed sentence-transformer behind an OpenAI-shape `/v1/embeddings` endpoint. Removes OpenAI as a hard dep on the smriti write path. Persistent KV cache so the same input doesn't re-run the model. The model lives next to the data.
-
-### `flow` — system-of-record change-data-capture
-
-Streams deltas from any operational source — Postgres, MySQL, SaaS APIs (Salesforce, NetSuite, Stripe, Zendesk, Linear, …), SAP / Oracle / Dynamics for ERP, message queues, file watchers — into smriti as typed agent-memory events with `source_event_ids` lineage. The pipe that turns "agent memory" into **a live mirror of the business** — without it, the agent reasons in a vacuum.
+The rest — `FFS`, `smriti`, `karta`, `crucible`, `flow`, `vahini`, `bija`, `agentsmith`, `processmind`, `codegraph`, `neo`, `build-host`, `lab-sites`, `voronoi`, `functor`, and others — is private during active development. `MetaRepo` (internal) carries the full architecture map.
 
 ---
 
-## ✦ Agent tier
+## ✦ The engine, by tier
 
-> The runtime that loops memory + tools + LLMs. Where decisions become events.
+### Storage
 
-### `karta` — agent runtime
+`FFS` is a single-file embedded database — property graph, HNSW vector index, columnar reads, MVCC, WAL, typed schema — built for the write workload an agent fleet produces. `cypher-rs` is the openCypher front-end FFS plugs in (and that any other graph store could plug in). `vahini` ships WAL frames from a primary FFS to N replicas, byte-identical, no consensus. `bija` is the local embedding service that turns text into the vectors smriti's HNSW index needs: candle-backed sentence-transformer behind an OpenAI-shape `/v1/embeddings` endpoint.
 
-Sanskrit *kartā* — "the doer." Loads a skill spec, plans with an LLM (any OpenAI-shape endpoint), executes a tool, writes the result back to smriti with `source_event_ids` lineage, plans again with the new memory in context. Single Rust binary. LLM-provider-agnostic. Audit-trail by construction.
+### Memory
 
-Unbundles what every framework today bundles together: memory is smriti's job, capability specs are skills' job, LLM calls are an HTTP-shaped trait. The runtime is the smallest thing that drives the loop correctly.
+`smriti` is the multi-tenant HTTP service in front of FFS. Scoped tokens (`read` / `write` / `admin`), per-tenant rate limits, append-only audit log, Cypher edge traversal, persistent HNSW across restarts, Prometheus metrics, `x-smriti-trace-id` correlation. Holds the full event history with lineage from operational row to derived fact.
 
-### `skills` — open enterprise skill stack
+### Ingest
 
-50+ skills covering accounting, HR, procurement, support, ops. Each skill is a typed JSON spec with system prompt + tool implementations. Open source. Composable. Versioned. The capability catalogue agents pull from.
+`flow` is change-data-capture from the operational source of record into smriti as typed agent-memory events with `source_event_ids` lineage. Postgres logical replication is in flight; SAP, Oracle, NetSuite, and SaaS APIs follow.
 
-### `crucible` — deterministic replay
+### Agent runtime + audit
 
-Walks a smriti audit trail backwards from any event id and reconstructs the karta agent's decision tree. Re-runs the same chain against a counterfactual (different prompt, different model, different memory state) and shows the structural diff. The post-mortem tool for non-deterministic agent fleets.
+`karta` is the runtime that loops memory, tools, and an LLM. Loads a skill spec, plans with any OpenAI-shape endpoint, executes a tool, writes the result back to smriti with lineage, plans again. Single Rust binary, LLM-agnostic, audit trail by construction. `crucible` walks a smriti audit trail from any event id, reconstructs karta's decision tree, and replays it against counterfactual inputs to show structural diffs. `agents` is a GNN-based ensemble (predictor, bottleneck-spotter, allocator) for graph-shaped problems.
 
-### Planned: `yantra` — multi-agent orchestrator
+### Intelligence
 
-For workflows that span more than one agent run (e.g., "monthly close" — 30+ agents, days of wall-clock time, approvals, retries, hand-offs). Sanskrit *yantra* — "the engine / framework." Sketched, not built.
+`processmind` is the streaming process-mining product on top of smriti — discovers, monitors, predicts. End-to-end pipeline with GNN ONNX inference and a single-page UI. `GNN`, `pm-bench`, and `pm-rag` are the open companions: the model library, the open benchmark, and the process-aware retrieval research.
 
----
+### Code intelligence
 
-## ✦ Intelligence tier
+`codegraph` is multi-signal graph diffusion for code context: 14 graph algorithms, 8 signal sources (AST, calls, types, imports). RAG without embeddings. Recall 0.698 on SWE-bench Verified at 8K tokens (p < 0.0001), ahead of BM25 and ego-graph baselines.
 
-> What turns events into insight: process mining, forecasting, document understanding, anomaly detection.
+### Identity
 
-### `gnn` — process mining with graph attention networks
+`agentsmith` is the auth platform every other service delegates to. Built as a plugin on `better-auth`, so the existing better-auth ecosystem (`twoFactor`, `passkey`, OAuth providers) composes rather than being reimplemented. Ships with a 3-stage anomaly engine (EMA + multivariate Gaussian + LLM judge), a signed WASM plugin sandbox (ed25519 manifest, wasmtime, fuel + memory caps), and AEAD storage. The long-term direction is full Clerk-equivalence for agent-driven SaaS: orgs, RBAC, JWTs, webhooks, magic links.
 
-Next-event prediction, bottleneck detection, conformance checking, Q-learning over event-log graphs. PyTorch + PM4Py + Rust hot paths. Crawls the event graph smriti stores — works equally on procurement workflows, support-ticket flows, sales-order processes, recruiting funnels, anything event-shaped — and finds the actual process, not the one in the SOP doc.
+### Master data + migration
 
-### Planned: `drishti` — document understanding
+`voronoi` is the master-data resolution studio: vector-similarity entity matching via bija + HNSW, steward review queues, golden-record graph in smriti. `functor` is the legacy-schema mapping copilot: profiles SAP / Oracle / mainframe DDL with codegraph, generates versioned mapping specs, replays via crucible.
 
-Sanskrit *dṛṣṭi* — "vision." Invoice / PO / contract extraction with structured output into smriti. The pipe from PDFs to typed events.
+### Skills + MCP
 
-### Planned: `gauge` — forecasting + anomaly
+`skills` is the open catalog — 50+ Claude Code skills covering accounting, HR, procurement, support, ops. `enterprise-skills` is the production variant. `erpai-builder-skills` are the skills that build apps from English prompts. `skillcheck` is the static analyzer. `mcprec` records and replays any MCP server for deterministic agent-tool tests. `gitlab-mr-mcp` is the MCP server for GitLab merge requests.
 
-Demand forecasting, cash-flow prediction, anomaly detection over the same event substrate everything else uses. No separate warehouse, no separate pipeline.
+### Agent UX
 
-### Planned: `lekhak` — narrative / report generator
+`neo` is the local-first desktop console — Tauri v2 + React 19, 26 built-in tools, typed permissions, file-based memory, MCP, sub-agents. Loads `skills`, `enterprise-skills`, `appskills`, and `lab-opskills` at runtime; calls `karta` for agent loops; calls `mcprec` for record/replay. `clickr` is the natural-language ClickHouse CLI. `shruti` joins Zoom / Meet, records, diarizes, and turns speech into `spec.json` the agent can consume. `erpai-cli` is the NL CLI for ERP data.
 
-Sanskrit *lekhak* — "writer." Auto-narrative for board decks, exec summaries, MD&A from the live event graph. Read-only against smriti.
+### Browser runtime
 
----
+`erpai-pages-runtime` is the browser SDK for agent-generated HTML pages — the contract between an agent's page output and the iframe it runs in. `window.erpai`: SQL/records, formatters, dropdowns, theme, Tabler icons, charts.
 
-## ✦ Interface tier
+### Marketplace
 
-> What humans and agents actually touch.
+`krawler` is the codebase behind krawler.com. Identity and lifecycle, per-agent `SKILL.md`, follow graph, log-scaled reputation, hiring, completions, signals, search. Linked installs via `agent_pair_tokens`.
 
-### `clickr` — natural-language CLI for ClickHouse®
+### Distribution + hosting
 
-Text-to-SQL with local or cloud LLMs. The terminal-native edge of the analytics stack.
-
-### `neo` — agent console for finance, ops, HR, sales, support
-
-Local-first desktop app for talking to and running AI agents. Tool-loop, typed permissions, file-based memory, model-agnostic (Claude / Gemini / GLM / Ollama). Signed binaries for macOS / Linux / Windows in [`neo-releases`](https://github.com/erphq/neo-releases) (publish in flight).
-
-### Planned: web app, mobile, voice
-
-The conversational and dashboard surface. One identity, one event stream, one set of skills underneath — different rendering targets above. Designed once the agent + memory + intelligence tiers are battle-hardened.
-
----
-
-## ✦ The verticals
-
-The substrate is vertical-agnostic. The same `smriti` + `karta` + `bija` + `flow` stack delivers radically different products depending on which connectors run, which skills load, and which surfaces ship. Some examples of what fits on it:
-
-| Vertical | Source-of-record `flow` connects to | Skills `karta` runs |
-|---|---|---|
-| **Finance / ERP** | Postgres-backed ERPs (Odoo, ERPNext), SAP, Oracle EBS / Fusion, NetSuite, Microsoft Dynamics, QuickBooks | journal entry review, AP automation, AR collections, FP&A narrative, month-end close |
-| **CRM / Sales** | Salesforce, HubSpot, Pipedrive | lead enrichment, deal-risk triage, account research, quote drafting |
-| **Support / Helpdesk** | Zendesk, Intercom, Freshdesk, ServiceNow | ticket triage, response drafting, knowledge-base sync, SLA-breach prediction |
-| **ITSM / DevOps** | Linear, Jira, PagerDuty, GitHub | incident triage, post-mortem drafting, runbook execution, change-risk scoring |
-| **HR / Recruiting** | Workday, BambooHR, Greenhouse, Lever | candidate screening, scheduling, offer-letter drafting, onboarding |
-| **Billing / Revenue** | Stripe, Chargebee, Recurly | dunning, churn-risk scoring, refund triage, revenue recognition |
-| **Procurement** | Coupa, Ariba, ERP modules | vendor onboarding, PO matching, contract review, spend analysis |
-| **Marketing / Growth** | Marketo, Customer.io, Iterable, Mixpanel | campaign analysis, audience-segment generation, copy drafting |
-
-Every row above is the same stack underneath. The product differences are: which connector `flow` runs (one row's worth), which skill bundle `karta` loads (one library), which interface ships (chat / dashboard / CLI / mobile). Months of integration work for traditional SaaS; days for ours.
-
----
-
-## ✦ What's open here
-
-The repos linked below are public. The rest of the stack named above is internal until each piece is ready to leave the building.
-
-| Repo | What it does |
-|---|---|
-| [`GNN`](https://github.com/erphq/GNN) | Process mining with Graph Attention Networks. Next-event prediction, bottleneck detection, conformance, Q-learning. |
-| [`clickr`](https://github.com/erphq/clickr) | Natural-language CLI for ClickHouse®. Text-to-SQL with local or cloud LLMs. |
-| [`skills`](https://github.com/erphq/skills) | The open enterprise skill stack. 50+ Claude Code skills covering accounting, HR, procurement, support, ops. |
-| [`neo-releases`](https://github.com/erphq/neo-releases) | Signed binaries for Neo, our agent console for finance / ops / HR / sales / support. macOS / Linux / Windows. |
+`build-host` is the deploy host behind build.host: agent-friendly TLS, logs, metrics, rollback, no pipelines to configure. `lab-sites` carries the public web properties. `neo-releases` and `erpai-cli-releases` carry signed binaries and auto-update manifests.
 
 ---
 
@@ -197,36 +183,45 @@ Symbols: ✅ shipped (one of our repos) · 🟡 partial / in flight · ⏳ plann
 | Agent runtime (loop + audit) | 🟡 | `karta` |
 | Skill catalogue (typed capability specs) | ✅ | `skills` |
 | Deterministic replay / forensics | 🟡 | `crucible` |
-| Multi-agent orchestration / long workflows | ⏳ | planned: `yantra` |
-| Sandboxed tool execution (WASM) | ⏳ | v2 — runs in-process today |
+| Multi-agent orchestration / long workflows | ⏳ | planned |
+| Sandboxed tool execution (WASM) | 🟡 | shipped in `agentsmith` plugin sandbox; karta still runs tools in-process |
 | Cost / token governance | ⏳ | planned |
 | Approvals / 4-eyes for sensitive actions | ⏳ | planned (likely a `karta` skill type) |
 | **Intelligence tier** | | |
-| Process mining (graph-attention) | ✅ | `gnn` |
-| Document understanding (invoices, POs, contracts) | ⏳ | planned: `drishti` |
-| Forecasting + anomaly detection | ⏳ | planned: `gauge` |
-| Narrative / report generation | ⏳ | planned: `lekhak` |
-| Voice / transcription | ⏳ | planned |
+| Process mining (graph-attention) | ✅ | `processmind` · `GNN` |
+| Process-aware retrieval | ✅ | `pm-rag` |
+| Open process-mining benchmark | ✅ | `pm-bench` |
+| Code intelligence / graph RAG | ✅ | `codegraph` |
+| Document understanding (invoices, POs, contracts) | ⏳ | planned |
+| Forecasting + anomaly detection | ⏳ | planned |
+| Narrative / report generation | ⏳ | planned |
+| Voice / transcription | 🟡 | `shruti` (meeting capture) |
+| **Identity tier** | | |
+| Auth + sessions + risk scoring | ✅ | `agentsmith` v3 |
+| Sandboxed plugin execution | ✅ | `agentsmith` (signed WASM, ed25519, wasmtime) |
+| Orgs / RBAC / JWT issuance | 🟡 | `agentsmith` Phase 2 (Clerk-equivalence) |
+| Magic links / OAuth / passkeys | 🟡 | via `better-auth` providers, surfaced through `agentsmith` |
+| **Master data + migration** | | |
+| Entity resolution (vector-similarity) | 🟡 | `voronoi` (scaffold) |
+| Legacy schema mapping copilot | 🟡 | `functor` (scaffold) |
 | **Interface tier** | | |
 | Natural-language CLI (analytics) | ✅ | `clickr` |
-| Local-first agent console | ✅ | `neo-releases` |
-| Conversational UI (chat-with-agent) | ⏳ | planned |
-| Web dashboard / forms surface | ⏳ | planned |
-| Mobile / offline | ⏳ | planned |
-| Email / Slack / Teams integration | ⏳ | planned (likely `karta` skills + a thin connector) |
+| Natural-language CLI (ERP data) | 🟡 | `erpai-cli` (releases; source private) |
+| Local-first agent console | ✅ | `neo` · `neo-releases` |
+| Browser runtime for agent-generated pages | ✅ | `erpai-pages-runtime` |
+| Meeting agent | 🟡 | `shruti` |
 | **Operator tier** | | |
-| Identity / SSO / SAML | ⏳ | v1 = API keys with scopes; OIDC is v2 |
-| Secrets management | ⏳ | use whatever the operator already runs |
 | Per-tenant rate limits + quotas | ✅ | built into `smriti` |
 | Audit log | ✅ | built into `smriti` |
 | Per-request correlation header | ✅ | built into `smriti` (`x-smriti-trace-id`) |
 | Prometheus metrics | ✅ | built into `smriti` |
+| Identity / SSO / SAML | 🟡 | `agentsmith` (Clerk-equivalence in flight) |
 | Helm chart | ⏳ | when production deploy is on the table |
 | **Quality tier** | | |
-| Integration test suites per service | ✅ | each Rust service ships tests |
-| CI on every push (fmt + clippy + test + docker) | ✅ | each Rust service has it |
+| Integration test suites per service | ✅ | each service ships tests; ~1,850 across the org |
+| CI on every push | ✅ | fmt + clippy + test + docker on Rust; ruff + pytest on Python |
 | Property-based + fuzz testing | ⏳ | v2 |
-| Model evaluation harness | ⏳ | v2 |
+| Model evaluation harness | 🟡 | `pm-bench` for process mining; broader harness planned |
 | **What we're not building** (for now) | | |
 | A general-purpose vector DB | ◯ | `smriti` is agent-memory specific |
 | An LLM gateway / proxy | ◯ | use LiteLLM / Ollama / direct |
@@ -235,20 +230,9 @@ Symbols: ✅ shipped (one of our repos) · 🟡 partial / in flight · ⏳ plann
 
 ---
 
-## ✦ What we believe
-
-- **Local-first.** The model goes where the data is. Cloud round-trips are an admission of failure, not a feature.
-- **Typed contracts.** Schema enforced at the storage boundary, not in an application layer above. Errors caught at compile, not in production.
-- **Composable skills.** Every business process is a skill. Skills compose. Skills ship in less than an hour.
-- **Agents that do work.** Tool-loop, typed permissions, real outcomes. Not chat-only demos.
-- **Audit trail by construction.** Every step writes events with lineage. Forensics is a query, not a feature request.
-- **One language down the stack.** Rust. Top to bottom. Boring is the point.
-
----
-
 ## ✦ CI status — refreshed hourly
 
-A live roll-up of the **public** org surface area so an agent (or human) opening this page each morning can see at a glance what's tested, what's running, and what's red. The window is "since 00:00 UTC today." Refreshed every hour by [`refresh-status.yml`](https://github.com/erphq/.github/blob/main/.github/workflows/refresh-status.yml). Private-repo status is tracked internally and excluded here so this page stays useful to anyone passing through.
+A live roll-up of the **public** org surface area so an agent (or human) opening this page each morning can see what's tested, what's running, and what's red. The window is "since 00:00 UTC today." Refreshed every hour by [`refresh-status.yml`](https://github.com/erphq/.github/blob/main/.github/workflows/refresh-status.yml). Private-repo status is tracked internally and excluded here so this page stays useful to anyone passing through.
 
 <!-- BEGIN: ci-status -->
 _Last refreshed: 2026-05-12 07:14 UTC. Window: runs created since 00:00 UTC today (`2026-05-12T00:00:00Z`)._
@@ -271,12 +255,6 @@ _Last refreshed: 2026-05-12 07:14 UTC. Window: runs created since 00:00 UTC toda
 
 > "Other" covers cancelled / skipped / in-progress / neutral runs. "Tests" is read from each repo's README `tests-N passing` badge — repos without a badge show `—`.
 <!-- END: ci-status -->
-
----
-
-## ✦ Why Sanskrit names
-
-You'll see Sanskrit in the project names: `smriti` (memory), `karta` (the doer), `vahini` (the flowing channel), `bija` (the seed). Each name is the precise word for the role — `smriti` means "that which is remembered," and `smriti` the service is exactly that. Words that survived three thousand years of use earn their semantic load.
 
 ---
 
