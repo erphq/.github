@@ -6,7 +6,7 @@ Living document. Tracks the org-wide program to reduce dependency-supply-chain r
 - **Scope today:** **closed services only** (the 18 private active repos + the 7 internal-visibility repos). The 13 public repos remain on public registries during Phase 1 and Phase 2; revisit after Phase 2 ships.
 - **Status:** Phase 0 — baseline hygiene — pending kick-off. No forks exist yet.
 
-> Tracking issue with phase checklists: [`erphq/MetaRepo` #TBD](https://github.com/erphq/MetaRepo/issues) (link added when issue is filed).
+> Tracking issue with phase checklists: [`erphq/MetaRepo#4`](https://github.com/erphq/MetaRepo/issues/4).
 
 ---
 
