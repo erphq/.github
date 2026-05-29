@@ -10,7 +10,7 @@ Open at the engine, private at the platform, live at three brands.
 
 </div>
 
-> 🗺 **Org members, start here:** [`erphq/MetaRepo`](https://github.com/erphq/MetaRepo) carries the full architecture map for every repo — high-resolution SVG, layer-by-layer walkthrough, the edge list, the migration playbook, and a hourly-refreshed status snapshot of all 40 repositories. New to the org? Skim that first.
+> 🗺 **Org members, start here:** [`erphq/MetaRepo`](https://github.com/erphq/MetaRepo) carries the full architecture map for every repo — high-resolution SVG, layer-by-layer walkthrough, the edge list, the migration playbook, and a hourly-refreshed status snapshot of all 43 repositories. New to the org? Skim that first.
 
 ---
 
@@ -19,9 +19,9 @@ Open at the engine, private at the platform, live at three brands.
 | | |
 |---|---|
 | **Live products** | 3 brands — [erp.ai](https://erp.ai) (flagship) · [build.host](https://build.host) (soft-launch) · [krawler.com](https://krawler.com) (soft-launch) |
-| **Repos in this org** | 40 — 13 public · 7 internal (org-only) · 18 private active · 2 archived |
-| **Active tests** | **~1,850 passing** across the active set |
-| **Largest test suites** | `processmind` (268) · `FFS` (252) · `pm-bench` (232) · `cypher-rs` (130) · `agentsmith` (127) · `krawler` (127) · `GNN` (110) |
+| **Repos in this org** | 43 — 13 public · 8 internal (org-only) · 20 private active · 2 archived |
+| **Active tests** | **~2,900 passing** across the active set |
+| **Largest test suites** | `FFS` (896) · `processmind` (268) · `krawler` (260) · `pm-bench` (232) · `cypher-rs` (130) · `agentsmith` (127) · `GNN` (110) |
 | **Languages** | Rust (storage + runtime) · Python (intelligence + bench) · TypeScript (UX + dev tools) · JavaScript (web) · HTML (sites) |
 | **HQ** | San Francisco |
 | **Security contact** | security@erp.ai — see [SECURITY.md](https://github.com/erphq/.github/blob/main/SECURITY.md) |
@@ -74,7 +74,7 @@ What an agent does on krawler:
 
 Linked installs use `agent_pair_tokens` (`kpt_live_…`, sha256'd, 90-day expiry). Each agent has identity, lifecycle (4 states), installed external skills (up to 32 refs), a follow-graph-backed feed, and a server-side content gate.
 
-The runtime an agent uses on krawler is [`neo`](https://github.com/erphq/neo) (the old `@krawlerhq/agent` CLI is deprecated and archived). Soft-launched. Codebase at [`erphq/krawler`](https://github.com/erphq/krawler) (internal-visibility, monorepo: `apps/web` + `apps/api`), 127 tests.
+The runtime an agent uses on krawler is [`neo`](https://github.com/erphq/neo) (the old `@krawlerhq/agent` CLI is deprecated and archived). Soft-launched. Codebase at [`erphq/krawler`](https://github.com/erphq/krawler) (internal-visibility, monorepo: `apps/web` + `apps/api`), 260 tests. The skill system is now **Skillgraph** — a human-driven, outcome-based native catalog (GitHub URLs dropped from the skill-source allowlist), and agents have email + LLM auto-reply at `<handle>@agents.krawler.com`.
 
 ---
 
@@ -124,7 +124,7 @@ Each tier is independently replaceable across an HTTP or process boundary. Distr
 
 ---
 
-## ✦ Architecture — all 40 repos
+## ✦ Architecture — all 43 repos
 
 ```mermaid
 flowchart TB
@@ -148,11 +148,12 @@ flowchart TB
         skills[skills]:::public
         ent-skills[enterprise-skills]:::private
         builder[erpai-builder-skills]:::internal
-        appskills[appskills]:::internal
+        registry[erpai-app-registry]:::internal
         opskills[lab-opskills]:::private
         skillcheck[skillcheck]:::public
         mcprec[mcprec]:::public
         gl-mcp[gitlab-mr-mcp]:::private
+        mos[mixture-of-skills]:::private
       end
 
       subgraph PAGES["Browser runtime"]
@@ -181,8 +182,9 @@ flowchart TB
         pmrag[pm-rag]:::public
       end
 
-      subgraph CODE["Code intel"]
+      subgraph CODE["Code + doc intel"]
         codegraph[codegraph]:::private
+        coregraph[coregraph]:::private
       end
 
       subgraph AUTH["Identity + auth"]
@@ -199,6 +201,7 @@ flowchart TB
 
       subgraph STORAGE["Storage substrate"]
         ffs[FFS]:::private
+        ffsmcp[ffs-mcp]:::internal
         vahini[vahini]:::private
         cypher[cypher-rs]:::public
         bija[bija]:::private
@@ -216,6 +219,7 @@ flowchart TB
     bija --> smriti
     ffs --> smriti
     ffs --> vahini
+    ffs -.-> ffsmcp
 
     ERP[(ERP systems)] --> flow
     flow --> smriti
@@ -225,6 +229,7 @@ flowchart TB
     crucible -.-> karta
 
     smriti --> processmind
+    ffs --> processmind
     processmind --> gnn
     pmbench -.-> gnn
     pmrag -.-> processmind
@@ -241,40 +246,47 @@ flowchart TB
     neo --> skills
     neo --> ent-skills
     neo --> opskills
-    neo --> appskills
+    neo --> registry
     neo --> mcprec
     neo --> gl-mcp
     neo --> neoproxy
+    neo --> processmind
+    neo -.-> codegraph
+    neo -.-> coregraph
     skillcheck -.-> skills
     skillcheck -.-> ent-skills
     skillcheck -.-> builder
-    skillcheck -.-> appskills
+    skillcheck -.-> registry
     skillcheck -.-> opskills
 
     builder --> ent-skills
     builder --> codegraph
     builder -.-> pagesrt
+    registry --> skills
 
     krawler -.-> skills
     krawler -.-> ent-skills
+    krawler -.-> mos
 
     erpai-cli --> karta
     neo --> karta
 
     buildhost --> labsites
+    buildhost -.-> skills
     neorel -.-> neo
     clirel -.-> erpai-cli
 
-    smriti -->|tokens| agentsmith
-    karta -->|agent identity| agentsmith
-    krawler -->|user + agent identity| agentsmith
-    neo -->|desktop auth| agentsmith
-    neoproxy -->|token verify| agentsmith
-    buildhost -->|deploy auth| agentsmith
-    voronoi -->|steward auth| agentsmith
-    functor -->|review auth| agentsmith
-    shruti -->|bot api auth| agentsmith
-    erpai-cli -->|cli auth| agentsmith
+    %% Identity tier (Phase 2, not yet wired): consumers slated to delegate to agentsmith
+    smriti -.->|tokens| agentsmith
+    karta -.->|agent identity| agentsmith
+    krawler -.->|user + agent identity| agentsmith
+    neo -.->|desktop auth| agentsmith
+    neoproxy -.->|token verify| agentsmith
+    buildhost -.->|deploy auth| agentsmith
+    voronoi -.->|steward auth| agentsmith
+    functor -.->|review auth| agentsmith
+    shruti -.->|bot api auth| agentsmith
+    erpai-cli -.->|cli auth| agentsmith
 ```
 
 🟢 public · 🟡 internal (org-only) · 🟣 private · ⚫ archived. Solid arrows = runtime data / control flow. Dashed = build-time / out-of-band relationship.
@@ -283,22 +295,23 @@ flowchart TB
 
 ## ✦ Full repo catalog
 
-All 40 repositories, grouped by layer. `tests` reads off each repo's `tests-N passing` badge. The most current numbers come from the auto-refreshed CI status block at the bottom of this page; the totals here are as of the last `MetaRepo` catalog refresh.
+All 43 repositories, grouped by layer. `tests` reads off each repo's `tests-N passing` badge. The most current numbers come from the auto-refreshed CI status block at the bottom of this page; the totals here are as of the last `MetaRepo` catalog refresh.
 
 ### Storage substrate
 
 | Repo | Vis | Lang | Version | Tests | Role |
 |---|---|---|---|---|---|
 | [`cypher-rs`](https://github.com/erphq/cypher-rs) | 🟢 | Rust | 0.10.0 | 130 | openCypher front-end — lex · parse · semantic analysis · logical plan · predicate-pushdown optimizer · cost model · column-set tracking. Storage-agnostic. |
-| [`FFS`](https://github.com/erphq/FFS) | 🟣 | Rust | pre-v0 | **252** | Single-file embedded graph + vector + columnar database. Pager · WAL · MVCC · typed schema · B+-tree indexes · HNSW · Cypher executor (read + write). Six crates: `ffs`, `ffs-bench`, `ffs-demo`, `ffs-datasets`, `ffs-evals`, `ffs-sim`. |
-| [`vahini`](https://github.com/erphq/vahini) | 🟣 | Rust | v1 hardening | 36 | Streaming WAL replicator for FFS. Async, single-binary, no consensus. Byte-identical replication, crash-restart resume, idle-disconnect detection, per-tenant lag metrics. |
-| [`bija`](https://github.com/erphq/bija) | 🟣 | Rust | v0 HTTP surface | 37 | On-device embedding service. candle-backed sentence-transformer behind an OpenAI-shape `/v1/embeddings` endpoint. LRU cache, Prometheus metrics, non-root Docker. |
+| [`FFS`](https://github.com/erphq/FFS) | 🟣 | Rust | 0.5.0 | **896** | Single-file embedded graph + vector + columnar database, repositioned as a standalone Postgres-replacement DB-of-record. Pager · WAL · MVCC · typed schema · primary + secondary B+-tree indexes · persistent HNSW · A+ double-CSR rels · Cypher executor (read + write). 12-crate workspace; ships the `ffsd` server daemon + `ffs-py` bindings. |
+| [`ffs-mcp`](https://github.com/erphq/ffs-mcp) | 🟡 | Python | lab-grade | — | MCP wrapper over the FFS `ffs-py` binding — open a file, run Cypher, inspect schema as MCP tool calls. 6 tools + an `ffs://status` resource. Interactive exploration only; explicitly not production. |
+| [`vahini`](https://github.com/erphq/vahini) | 🟣 | Rust | v1 in flight | 36 | Streaming WAL replicator for FFS. Async, single-binary, no consensus. Byte-identical replication, crash-restart resume, idle-disconnect detection, per-tenant lag metrics. |
+| [`bija`](https://github.com/erphq/bija) | 🟣 | Rust | v0 HTTP surface | 37 | On-device embedding service. candle-backed sentence-transformer behind an OpenAI-shape `/v1/embeddings` endpoint. LRU cache, Prometheus metrics, non-root Docker. Ships a deterministic stub embedder; real candle inference held until first-customer demand. |
 
 ### Managed memory
 
 | Repo | Vis | Lang | Version | Tests | Role |
 |---|---|---|---|---|---|
-| [`smriti`](https://github.com/erphq/smriti) | 🟣 | Rust | pre-v0 | 52 | Multi-tenant managed agent-memory service over FFS. Per-tenant rate limits + isolation, scoped Bearer tokens (`read`/`write`/`admin`), append-only audit log, Cypher edge traversal, persistent HNSW across restarts, Prometheus metrics, `x-smriti-trace-id` correlation. |
+| [`smriti`](https://github.com/erphq/smriti) | 🟣 | Rust | pre-v0 | 52 | Multi-tenant managed agent-memory service over FFS. Per-tenant rate limits + isolation, scoped Bearer tokens (`read`/`write`/`admin`), append-only audit log, Cypher edge traversal, persistent HNSW across restarts, Prometheus metrics, `x-smriti-trace-id` correlation. Now ships an async Rust SDK + Python (PyO3) + TypeScript (napi-rs) bindings + `Idempotency-Key`. |
 
 ### Data ingest
 
@@ -311,30 +324,31 @@ All 40 repositories, grouped by layer. `tests` reads off each repo's `tests-N pa
 | Repo | Vis | Lang | Version | Tests | Role |
 |---|---|---|---|---|---|
 | [`karta`](https://github.com/erphq/karta) | 🟣 | Rust | v1 trajectory done | 67 | Local-first agent runtime. Skill spec → LLM plan → tool execute → event write to smriti with lineage → plan again. Three baseline tools: `smriti_query`, `smriti_search`, `smriti_append`. Single binary, LLM-agnostic, audit trail by construction. |
-| [`crucible`](https://github.com/erphq/crucible) | 🟣 | Rust | v0 walker | 42 | Deterministic replay. Walks a smriti audit trail backwards from any event id, reconstructs karta's decision tree, re-runs against counterfactual prompts / models / memory state, shows the structural diff. |
+| [`crucible`](https://github.com/erphq/crucible) | 🟣 | Rust | v0 walker | 42 | Deterministic replay. Walks a smriti audit trail backwards from any event id, reconstructs karta's decision tree, re-runs against counterfactual prompts / models / memory state, shows the structural diff. Counterfactual replay engine + LLM client landed; the `crucible replay` CLI subcommand is pending. |
 | [`agents`](https://github.com/erphq/agents) | 🟣 | Python | in flight | 40 | GNN-based agent ensemble. Predictor · bottleneck-spotter · allocator. Orchestrator merges them into one decision over a smriti event graph. |
 
 ### Process mining
 
 | Repo | Vis | Lang | Version | Tests | Role |
 |---|---|---|---|---|---|
-| [`processmind`](https://github.com/erphq/processmind) | 🟣 | Python | 0.2.0 | **268** | Streaming process mining: discovers, monitors, predicts. End-to-end pipeline — 9-step adapter, 10 task patterns, GNN ONNX inference, upload + incremental ingest, MCP wrapper, single-page UI. Deployed on Railway. |
+| [`processmind`](https://github.com/erphq/processmind) | 🟣 | Python | 0.2.0 | **268** | Cross-module graph-grounded ERP reasoner: NL → typed GraphQuery → multi-hop traversal → GNN risk scoring → LLM narration that never invents numbers. 9-step pipeline, ~10 task patterns, MCP wrapper, on Railway. Neo4j→FFS cutover landed (`GRAPH_BACKEND=ffs`); generic multi-tenant pattern engine; consumed via MCP by neo, Agentforce, Copilot. |
 | [`GNN`](https://github.com/erphq/GNN) | 🟢 | Python | 0.4.1 | 110 | Graph-attention networks over event logs. Next-event prediction · bottleneck detection · conformance · Q-learning. PyTorch + PM4Py + Rust hot paths (588× speedup on per-case loops). |
 | [`pm-bench`](https://github.com/erphq/pm-bench) | 🟢 | Python | 0.1.0 | **232** | Open process-mining benchmark — datasets (BPI 2012/2017/2018/2019/2020, Sepsis, …), splits, scoring, leaderboard. End-to-end loop `split → prefixes → predict → score`. Markov baseline lives. |
 | [`pm-rag`](https://github.com/erphq/pm-rag) | 🟢 | Python | 0.6.0 | 77 | Process-aware retrieval over event traces. Embedding-based and LLM-assisted event→symbol mapping with `compose_mappings`. Top-1 31% / top-3 71% / top-5 95% / top-10 100% on the bundled demo. |
 | [`ProcessGNN`](https://github.com/erphq/ProcessGNN) | ⚫ | Python | — | — | Archived. Predecessor of `GNN`, kept for historical reference. |
 
-### Code intelligence
+### Code + doc intelligence
 
 | Repo | Vis | Lang | Version | Tests | Role |
 |---|---|---|---|---|---|
-| [`codegraph`](https://github.com/erphq/codegraph) | 🟣 | Python | 0.13.0 | 39 | Multi-signal graph diffusion for code context. 14 graph algorithms · 8 signal sources (AST, calls, types, imports). RAG without embeddings. Recall **0.698** on SWE-bench Verified at 8K tokens (n=147, p < 0.0001), beating BM25 (0.464) and ego-graph baselines (0.138). MCP server + Pages demo. |
+| [`codegraph`](https://github.com/erphq/codegraph) | 🟣 | Python + Rust | 0.13.0 | 39 | Multi-signal graph diffusion for code context. 14 graph algorithms · 8 signal sources (AST, calls, types, imports). RAG without embeddings. Recall **0.698** on SWE-bench Verified at 8K tokens (n=147, p < 0.0001), beating BM25 (0.464) and ego-graph baselines (0.138). 14-tool MCP server (Python + Rust) + Pages demo. |
+| [`coregraph`](https://github.com/erphq/coregraph) | 🟣 | Python | 0.1.0 | 45 | Graph-aware retrieval for agent harnesses. One MCP server, four tools (`coregraph_grep`/`_ls`/`_read`/`_glob`) that look like grep/ls/read/glob but rank results over a live doc-reference graph (BM25 + inbound links + hub score + recency). ~7× fewer tool calls and ~6.6× fewer tokens vs plain grep on a 1,004-doc A/B. The doc-graph counterpart to codegraph. |
 
 ### Identity + auth
 
 | Repo | Vis | Lang | Version | Tests | Role |
 |---|---|---|---|---|---|
-| [`agentsmith`](https://github.com/erphq/agentsmith) | 🟣 | Rust + TS | v3 | **127** | The auth platform every other service delegates to. `better-auth` plugin (TS shim) + Rust daemon. Composes the existing better-auth ecosystem (`twoFactor`, `passkey`, OAuth) rather than reimplementing. 3-stage anomaly engine (EMA + multivariate Gaussian + LLM judge). Signed WASM plugin sandbox (ed25519, wasmtime, fuel/memory caps). AEAD storage (XChaCha20-Poly1305). Hot path ~620 ns. Long-term direction: full Clerk-equivalence for agent-driven SaaS. |
+| [`agentsmith`](https://github.com/erphq/agentsmith) | 🟣 | Rust + TS | v3 | **127** | The intended auth platform for the substrate (consumers federate in Phase 2; today they ship their own auth and build-host runs on the Better Auth realm at auth.erpai.studio). `better-auth` plugin (TS shim) + Rust daemon. Composes the existing better-auth ecosystem (`twoFactor`, `passkey`, OAuth) rather than reimplementing. 3-stage anomaly engine (EMA + multivariate Gaussian + LLM judge). Signed WASM plugin sandbox (ed25519, wasmtime, fuel/memory caps). AEAD storage (XChaCha20-Poly1305). Hot path ~620 ns. Long-term direction: full Clerk-equivalence for agent-driven SaaS. |
 
 ### Master data + migration
 
@@ -350,17 +364,18 @@ All 40 repositories, grouped by layer. `tests` reads off each repo's `tests-N pa
 | [`skills`](https://github.com/erphq/skills) | 🟢 | HTML | — | — | The open enterprise skill stack (formerly SDStack). 50+ Claude Code skills covering accounting · HR · procurement · support · ops. Vendor-neutral, MCP-native, composable. |
 | [`enterprise-skills`](https://github.com/erphq/enterprise-skills) | 🟣 | TS | — | — | Production Claude Code skills + MCP servers. Invoicing · payroll · vendor onboarding · RFPs · audit trails. The substrate every erp.ai app depends on at runtime. |
 | [`erpai-builder-skills`](https://github.com/erphq/erpai-builder-skills) | 🟡 | JS | — | — | Skills that build ERPs from English. Schema · columns · tables · views · workflows · relationships. Ship a working app in one chat. |
-| [`appskills`](https://github.com/erphq/appskills) | 🟡 | — | — | — | App-skill catalog with reference implementations. Worked examples · annotated `CATALOG.md` · applied-research notes. |
-| [`lab-opskills`](https://github.com/erphq/lab-opskills) | 🟣 | Python | — | — | Internal pip-installable Claude Code skills for erp.ai. Deployments · on-call · incident response. Team-only. |
-| [`skillcheck`](https://github.com/erphq/skillcheck) | 🟢 | TS | 0.6.0 | 70 | Static analyzer for Claude Code skills. Lint manifests · verify refs · catch trigger collisions before runtime. SARIF 2.1.0 reporter, `--fix` mode, pluggable plugin API, `npm i -g skillcheck`. |
+| [`erpai-app-registry`](https://github.com/erphq/erpai-app-registry) | 🟡 | JS + MD | 0.1.0 | — | Source-of-truth registry of ERP.ai app definitions (renamed from `appskills`, 2026-05-25). One `.md` per app composing `skills` leaves; rendered to the catalog by `lab-sites`. Zero-dependency `appskills-lint` validator + CI. ~71 of a ~800 target. |
+| [`lab-opskills`](https://github.com/erphq/lab-opskills) | 🟣 | Shell + Py | — | — | Internal npx-installable Claude Code ops skills for erp.ai. SSH/Cloudflare ops for erpai.studio · krawler.com · build.host. Team-only. |
+| [`skillcheck`](https://github.com/erphq/skillcheck) | 🟢 | TS | 0.6.0 | 77 | Static analyzer for Claude Code skills. Lint manifests · verify refs · catch trigger collisions before runtime. SARIF 2.1.0 reporter, `--fix` mode, pluggable plugin API, `npm i -g skillcheck`. |
 | [`mcprec`](https://github.com/erphq/mcprec) | 🟢 | TS | 0.5.0 | 80 | Record & replay any MCP server. Capture stdio · replay deterministically · test agent tools without the network. HTTP transport (v0.4) · SSE streaming (v0.4.1) · record-mode HTTP proxy (v0.4.2). Pluggable matcher API. |
-| [`gitlab-mr-mcp`](https://github.com/erphq/gitlab-mr-mcp) | 🟣 | JS | 1.1.5 | 53 | MCP server for GitLab merge requests. List · review · comment · approve · resolve threads. |
+| [`gitlab-mr-mcp`](https://github.com/erphq/gitlab-mr-mcp) | 🟣 | JS | 1.1.5 | 53 | MCP server for GitLab merge requests. List · review · comment · approve · resolve threads. npm `@erp-ai/gitlab-mr-mcp`. |
+| [`mixture-of-skills`](https://github.com/erphq/mixture-of-skills) | 🟣 | TeX | — | — | Research paper: a graph-theoretic account of skill composition (skills factor into typed parts; a repertoire's closure is the constructible skill space). The formal theory behind the Skillgraph model. |
 
 ### Agent UX
 
 | Repo | Vis | Lang | Version | Tests | Role |
 |---|---|---|---|---|---|
-| [`neo`](https://github.com/erphq/neo) | 🟣 | TS | 0.2.3 | 43 | Agent console for finance / ops / HR / sales / support. Local-first desktop app (Tauri v2 + React 19). Underneath the chat: agent harness with reasoning loop, 26 built-in tools, typed permissions, file-based memory, deferred MCP, sub-agents. Two product contexts — ERP•AI (interactive, business-user loop) and Krawler (autonomous; Neo IS the agent runtime). |
+| [`neo`](https://github.com/erphq/neo) | 🟣 | TS + Rust | 0.2.17 | — | Agent console for finance / ops / HR / sales / support. Local-first desktop app (Tauri v2 + React 19). Underneath the chat: agent harness with parallel-read/serial-write scheduling, a large built-in tool registry, typed allow/ask/deny permissions, file-based memory, deferred MCP (processmind · codegraph · coregraph), sub-agents. Two product contexts — ERP•AI (interactive) and Krawler (autonomous; Neo IS the agent runtime). |
 | [`neo-proxy`](https://github.com/erphq/neo-proxy) | 🟣 | TS | 0.1.0 | — | LLM proxy for the locked variant of `neo`. Anonymous role-name routing (`neo_*`) → real upstream model on OpenRouter or Fireworks. Hono on Bun. Per-install bearer token at `https://api.neo.erpai.studio`. |
 | [`erpai-cli`](https://github.com/erphq/erpai-cli) | 🟢 | — | — | — | Natural-language CLI for ERP data. Invoices · payroll · inventory · 30+ business objects. Source is a placeholder; releases ship from `erpai-cli-releases`. |
 | [`clickr`](https://github.com/erphq/clickr) | 🟢 | Python | 1.0.3 | 46 | Natural-language CLI for ClickHouse®. Text-to-SQL with local or cloud LLMs. Not affiliated with ClickHouse. Standalone. |
@@ -376,7 +391,7 @@ All 40 repositories, grouped by layer. `tests` reads off each repo's `tests-N pa
 
 | Repo | Vis | Lang | Version | Tests | Role |
 |---|---|---|---|---|---|
-| [`krawler`](https://github.com/erphq/krawler) | 🟡 | JS | 0.0.0 | **127** | The codebase behind [krawler.com](https://krawler.com). Identity + lifecycle (4 states) · per-agent SKILL.md · installed external skills (up to 32 refs) · avatar choice · read-only browser · server-side content gate · follow-graph feed · log-scaled reputation · verified badge · startups + hiring · completions · signals · search. Linked installs via `agent_pair_tokens` (kpt_live_…, sha256'd, 90-day expiry). Monorepo (web + api). |
+| [`krawler`](https://github.com/erphq/krawler) | 🟡 | TS | 0.0.0 | **260** | The codebase behind [krawler.com](https://krawler.com). Identity + lifecycle (4 states) · per-agent SKILL.md + reflection loop · follow-graph feed · weighted endorsements · log-scaled reputation · verified badge · startups + hiring · completions · search · **agent email + LLM auto-reply** (Resend) · the **Skillgraph** native outcome-based skill catalog. Cloudflare edge caching cut cold TTFB ~500–1700ms → ~52–62ms. Monorepo (web + api) on Hetzner. |
 
 ### Distribution + hosting
 
@@ -384,8 +399,8 @@ All 40 repositories, grouped by layer. `tests` reads off each repo's `tests-N pa
 |---|---|---|---|---|---|
 | [`build-host`](https://github.com/erphq/build-host) | 🟣 | TS | 0.1.0 | 79 | The deploy host behind [build.host](https://build.host). Agent-friendly TLS · logs · metrics · rollback. No CI/CD setup, no dashboard. |
 | [`lab-sites`](https://github.com/erphq/lab-sites) | 🟣 | HTML | 0.0.0 | — | ERP•AI public-facing web properties (landing pages, marketing, portfolio). Static HTML, deployed via `build-host`. |
-| [`neo-releases`](https://github.com/erphq/neo-releases) | 🟢 | — | — | — | Signed `neo` binaries + auto-update manifests + installers for macOS / Linux / Windows. Where `neo`'s auto-updater looks. |
-| [`erpai-cli-releases`](https://github.com/erphq/erpai-cli-releases) | 🟢 | TS | 0.1.0 | — | Signed `erpai-cli` binaries + Next.js download page + `install.sh`. |
+| [`neo-releases`](https://github.com/erphq/neo-releases) | 🟢 | — | v0.2.17 | — | Signed `neo` binaries + auto-update manifests + installers for macOS / Windows (27 tags). Where `neo`'s auto-updater looks. |
+| [`erpai-cli-releases`](https://github.com/erphq/erpai-cli-releases) | 🟢 | TS | CLI v0.1.12 | — | Signed `erpai-cli` binaries + Next.js download page (`install.erpai.dev`) + `install.sh`. |
 
 ### Org meta
 
@@ -435,14 +450,15 @@ The runtime that loops memory + tools + LLMs. Where decisions become events.
 
 What turns events into insight. Process mining, forecasting, document understanding, anomaly detection.
 
-- **`processmind`** is the streaming product on top of smriti — discovers, monitors, predicts, catches drift before the audit does. 9-step adapter, 10 task patterns, GNN ONNX inference, upload + incremental ingest, MCP wrapper, single-page UI. Target graph DB is FFS; running deploy uses a transitional Neo4j 5.x adapter until FFS Python bindings land.
+- **`processmind`** is the cross-module graph-grounded reasoner on top of smriti — NL question → typed GraphQuery → multi-hop traversal → GNN risk scoring → LLM narration that never invents numbers. 9-step pipeline, ~10 task patterns, GNN ONNX inference, upload + incremental ingest, MCP wrapper. The Neo4j→FFS cutover has landed (`GRAPH_BACKEND=ffs` default; Neo4j 5.x kept as a transitional fallback). Now a generic, manifest-driven, multi-tenant pattern engine; consumed via MCP by neo, Salesforce Agentforce, and Microsoft Copilot.
 - **`GNN`** is the open model library. Next-event prediction, bottleneck detection, conformance checking, Q-learning over event-log graphs. PyTorch + PM4Py + Rust hot paths (588× speedup on per-case loops). Crawls the event graph smriti stores — works equally on procurement workflows, support-ticket flows, sales-order processes, recruiting funnels, anything event-shaped.
 - **`pm-bench`** is the open benchmark and leaderboard. Datasets, splits, scoring; bundled `synthetic-toy`; Markov baseline lives.
 - **`pm-rag`** is process-aware retrieval over event traces. Code-graph diffusion conditioned on the process state.
 
-### Code intelligence tier — `codegraph`
+### Code + doc intelligence tier — `codegraph`, `coregraph`
 
-Multi-signal graph diffusion for code context. 14 graph algorithms × 8 signal sources (AST, calls, types, imports, references). RAG without embeddings. Recall 0.698 on SWE-bench Verified at 8K tokens (147 tasks, p < 0.0001), beating BM25 (0.464) and ego-graph baselines (0.138). MCP server + GitHub Pages demo live.
+- **`codegraph`** — multi-signal graph diffusion for code context. 14 graph algorithms × 8 signal sources (AST, calls, types, imports, references). RAG without embeddings. Recall 0.698 on SWE-bench Verified at 8K tokens (147 tasks, p < 0.0001), beating BM25 (0.464) and ego-graph baselines (0.138). 14-tool MCP server (Python + Rust) + GitHub Pages demo live.
+- **`coregraph`** — the doc-graph counterpart, spun out of a `processmind` branch. One MCP server with four tools (`coregraph_grep`/`_ls`/`_read`/`_glob`) that look like grep/ls/read/glob but rank results over a live doc-reference graph (BM25 + inbound links + hub score + recency). ~7× fewer tool calls and ~6.6× fewer tokens than plain grep on a 1,004-doc A/B.
 
 ### Identity tier — `agentsmith`
 
@@ -460,13 +476,13 @@ Every other repo in the substrate eventually delegates auth here. Strategic dire
 - **`voronoi`** is the master-data resolution studio. Vector-similarity entity matching via bija + HNSW. Steward review queues. Golden-record graph in smriti. Solves the "Acme Corp / ACME, Inc / Acme Corporation" problem.
 - **`functor`** is the legacy-schema mapping copilot. Profiles SAP / Oracle / mainframe DDL with codegraph, generates versioned mapping specs, replays via crucible. The Phase 0-1 product for migrations.
 
-### Skills + MCP ecosystem — `skills`, `enterprise-skills`, `erpai-builder-skills`, `appskills`, `lab-opskills`, `skillcheck`, `mcprec`, `gitlab-mr-mcp`
+### Skills + MCP ecosystem — `skills`, `enterprise-skills`, `erpai-builder-skills`, `erpai-app-registry`, `lab-opskills`, `skillcheck`, `mcprec`, `gitlab-mr-mcp`, `mixture-of-skills`
 
-The capability layer. `skills` is the open vendor-neutral catalog. `enterprise-skills` is the production variant the platform runs at runtime. `erpai-builder-skills` are the skills that build new ERPs from English. `appskills` is the per-app reference catalog. `lab-opskills` is the team-internal deploy + on-call skill pack. `skillcheck` lints them all. `mcprec` records and replays any MCP server. `gitlab-mr-mcp` is the GitLab MR MCP we use for code review.
+The capability layer. `skills` is the open vendor-neutral catalog. `enterprise-skills` is the production variant the platform runs at runtime. `erpai-builder-skills` are the skills that build new ERPs from English. `erpai-app-registry` (renamed from `appskills`) is the source-of-truth registry of app definitions that compose `skills` leaves. `lab-opskills` is the team-internal deploy + on-call skill pack. `skillcheck` lints them all. `mcprec` records and replays any MCP server. `gitlab-mr-mcp` is the GitLab MR MCP we use for code review. `mixture-of-skills` is the research paper formalizing how skills compose from typed parts — the theory behind Skillgraph.
 
 ### Agent UX — `neo`, `clickr`, `erpai-cli`, `shruti`, `neo-proxy`
 
-- **`neo`** — the local-first desktop console (Tauri v2 + React 19). 26 built-in tools, typed permissions, file-based memory, MCP, sub-agents. Loads `skills` + `enterprise-skills` + `appskills` + `lab-opskills` at runtime; calls `karta` for agent loops; uses `mcprec` for record/replay; calls `neo-proxy` for LLM routing in the locked variant.
+- **`neo`** — the local-first desktop console (Tauri v2 backend + React 19 runtime, v0.2.17). A large built-in tool registry, typed allow/ask/deny permissions with plan mode, file-based memory, deferred MCP, sub-agents. Loads `skills` + `enterprise-skills` + `erpai-app-registry` + `lab-opskills` and MCP servers (`processmind`, `codegraph`, `coregraph`) at runtime; calls `karta` for agent loops; uses `mcprec` for record/replay; calls `neo-proxy` for LLM routing in the locked variant.
 - **`clickr`** — natural-language CLI for ClickHouse®. Text-to-SQL with local or cloud LLMs. The terminal-native edge of the analytics stack.
 - **`erpai-cli`** — natural-language CLI for ERP data. Invoices · payroll · inventory · 30+ business objects.
 - **`shruti`** — meeting agent. Joins Zoom / Meet, records, diarizes, turns speech into `spec.json` for ERP•AI.
@@ -647,6 +663,7 @@ Symbols: ✅ shipped · 🟡 partial / in flight · ⏳ planned · ◯ deliberat
 | Process-aware retrieval | ✅ | `pm-rag` |
 | Open process-mining benchmark | ✅ | `pm-bench` |
 | Code intelligence / graph RAG | ✅ | `codegraph` |
+| Doc-graph retrieval for agent harnesses | ✅ | `coregraph` (`coregraph-mcp`) |
 | Document understanding (invoices, POs, contracts) | ⏳ | planned: `drishti` |
 | Forecasting + anomaly detection | ⏳ | planned: `gauge` |
 | Narrative / report generation | ⏳ | planned: `lekhak` |
@@ -690,7 +707,7 @@ Symbols: ✅ shipped · 🟡 partial / in flight · ⏳ planned · ◯ deliberat
 | Identity / SSO / SAML | 🟡 | `agentsmith` (Clerk-equivalence in flight) |
 | Helm chart | ⏳ | when production deploy is on the table |
 | **Quality tier** | | |
-| Integration test suites per service | ✅ | each service ships tests; ~1,850 across the org |
+| Integration test suites per service | ✅ | each service ships tests; ~2,900 across the org |
 | CI on every push | ✅ | fmt + clippy + test + docker on Rust; ruff + pytest on Python; tsc + vitest on TS |
 | Hourly public CI roll-up | ✅ | this README, refreshed by `.github` |
 | Property-based + fuzz testing | ⏳ | v2 |
