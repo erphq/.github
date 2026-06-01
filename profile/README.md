@@ -752,7 +752,7 @@ You'll see Sanskrit across the engine: `smriti` (memory), `karta` (the doer), `v
 A live roll-up of the **public** org surface area so an agent (or human) opening this page each morning can see what's tested, what's running, and what's red. The window is "since 00:00 UTC today." Refreshed every hour by [`refresh-status.yml`](https://github.com/erphq/.github/blob/main/.github/workflows/refresh-status.yml). Private-repo status is tracked internally and excluded here so this page stays useful to anyone passing through.
 
 <!-- BEGIN: ci-status -->
-_Last refreshed: 2026-06-01 18:13 UTC. Window: runs created since 00:00 UTC today (`2026-06-01T00:00:00Z`)._
+_Last refreshed: 2026-06-01 20:35 UTC. Window: runs created since 00:00 UTC today (`2026-06-01T00:00:00Z`)._
 
 | Repo | Tests | Runs today | ✅ pass | ❌ fail | ⚠️ other |
 |---|---:|---:|---:|---:|---:|
@@ -763,12 +763,12 @@ _Last refreshed: 2026-06-01 18:13 UTC. Window: runs created since 00:00 UTC toda
 | [`erpai-cli-releases`](https://github.com/erphq/erpai-cli-releases) | — | 0 | 0 | 0 | 0 |
 | [`erpai-pages-runtime`](https://github.com/erphq/erpai-pages-runtime) | — | 0 | 0 | 0 | 0 |
 | [`mcprec`](https://github.com/erphq/mcprec) | 80 | 0 | 0 | 0 | 0 |
-| [`neo-releases`](https://github.com/erphq/neo-releases) | — | 0 | 0 | 0 | 0 |
+| [`neo-releases`](https://github.com/erphq/neo-releases) | — | 1 | 1 | 0 | 0 |
 | [`pm-bench`](https://github.com/erphq/pm-bench) | 232 | 0 | 0 | 0 | 0 |
 | [`pm-rag`](https://github.com/erphq/pm-rag) | 104 | 0 | 0 | 0 | 0 |
 | [`skillcheck`](https://github.com/erphq/skillcheck) | 77 | 5 | 5 | 0 | 0 |
 | [`skills`](https://github.com/erphq/skills) | — | 0 | 0 | 0 | 0 |
-| **Total** | **779** *(across 7 badged repos)* | **5** | **5** | **0** | **0** |
+| **Total** | **779** *(across 7 badged repos)* | **6** | **6** | **0** | **0** |
 
 > "Other" covers cancelled / skipped / in-progress / neutral runs. "Tests" is read from each repo's README `tests-N passing` badge — repos without a badge show `—`.
 <!-- END: ci-status -->
