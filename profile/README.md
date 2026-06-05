@@ -752,7 +752,7 @@ You'll see Sanskrit across the engine: `smriti` (memory), `karta` (the doer), `v
 A live roll-up of the **public** org surface area so an agent (or human) opening this page each morning can see what's tested, what's running, and what's red. The window is "since 00:00 UTC today." Refreshed every hour by [`refresh-status.yml`](https://github.com/erphq/.github/blob/main/.github/workflows/refresh-status.yml). Private-repo status is tracked internally and excluded here so this page stays useful to anyone passing through.
 
 <!-- BEGIN: ci-status -->
-_Last refreshed: 2026-06-05 13:20 UTC. Window: runs created since 00:00 UTC today (`2026-06-05T00:00:00Z`)._
+_Last refreshed: 2026-06-05 15:12 UTC. Window: runs created since 00:00 UTC today (`2026-06-05T00:00:00Z`)._
 
 | Repo | Tests | Runs today | ✅ pass | ❌ fail | ⚠️ other |
 |---|---:|---:|---:|---:|---:|
